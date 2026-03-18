@@ -5,7 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -15,14 +17,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +53,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             PRAKTAM_2417051022Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // Modifier padding(innerPadding) penting agar list tidak tertutup bar navigasi
                     DaftarReviewScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
@@ -49,11 +62,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DaftarReviewScreen(modifier: Modifier = Modifier) {
-    // LazyColumn akan menampilkan semua item (AOT, Fate, Spiderman) secara otomatis
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp) // Jarak antar kartu
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(ReviewSource.dummyReview) { review ->
             DetailScreen(review = review)
@@ -63,26 +75,45 @@ fun DaftarReviewScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun DetailScreen(review: Review) {
+    var isFavorite by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
-            // Gambar di bagian atas kartu
-            Image(
-                painter = painterResource(id = review.imageRes),
-                contentDescription = review.nama,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                contentScale = ContentScale.Crop
-            )
+            Box {
+                Image(
+                    painter = painterResource(id = review.imageRes),
+                    contentDescription = review.nama,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+                    contentScale = ContentScale.Crop
+                )
 
-            // Konten teks di bawah gambar
+                IconButton(
+                    onClick = { isFavorite = !isFavorite },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            color = if (isFavorite) Color.Red else Color.White,
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Favorite,
+                        contentDescription = if (isFavorite) "Favorite" else "Not Favorite",
+                        tint = if (isFavorite) Color.White else Color.Red
+                    )
+                }
+            }
+
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = review.nama, // Menampilkan AOT, Fate, atau Spiderman
+                    text = review.nama,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -102,7 +133,6 @@ fun DetailScreen(review: Review) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Tombol di bagian bawah seperti di contoh "Pesan Sekarang"
                 Button(
                     onClick = { /* Aksi Read More */ },
                     modifier = Modifier.fillMaxWidth()
