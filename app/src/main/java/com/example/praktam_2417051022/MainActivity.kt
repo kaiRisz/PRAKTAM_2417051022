@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -77,7 +78,6 @@ fun DaftarReviewScreen(modifier: Modifier = Modifier) {
             Text(
                 text = "Rekomendasi Populer",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             LazyRow(
@@ -91,7 +91,6 @@ fun DaftarReviewScreen(modifier: Modifier = Modifier) {
             Text(
                 text = "Daftar Menu Lengkap",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -107,7 +106,10 @@ fun ReviewRowItem(review: Review) {
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column {
             Image(
@@ -121,8 +123,7 @@ fun ReviewRowItem(review: Review) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
                     text = review.nama,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = review.kategori,
@@ -163,14 +164,14 @@ fun DetailScreen(review: Review) {
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
                         .background(
-                            color = if (isFavorite) Color.Red else Color.White,
+                            color = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White,
                             shape = CircleShape
                         )
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite Icon",
-                        tint = if (isFavorite) Color.White else Color.Red
+                        tint = if (isFavorite) Color.White else MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -178,8 +179,7 @@ fun DetailScreen(review: Review) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = review.nama,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleLarge
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -193,14 +193,18 @@ fun DetailScreen(review: Review) {
 
                 Text(
                     text = "Kategori: ${review.kategori}",
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = { /* Aksi Pesan */ },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
                     Text(text = "Pesan Sekarang")
                 }
