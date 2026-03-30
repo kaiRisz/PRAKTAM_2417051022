@@ -15,9 +15,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -63,12 +67,69 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DaftarReviewScreen(modifier: Modifier = Modifier) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
+        contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        item {
+            Text(
+                text = "Rekomendasi Populer",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(ReviewSource.dummyReview) { review ->
+                    ReviewRowItem(review = review)
+                }
+            }
+            Spacer(modifier = Modifier.height(45.dp))
+            Text(
+                text = "Daftar Menu Lengkap",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         items(ReviewSource.dummyReview) { review ->
             DetailScreen(review = review)
+        }
+    }
+}
+
+@Composable
+fun ReviewRowItem(review: Review) {
+    Card(
+        modifier = Modifier.width(160.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column {
+            Image(
+                painter = painterResource(id = review.imageRes),
+                contentDescription = review.nama,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = review.nama,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = review.kategori,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
@@ -79,17 +140,20 @@ fun DetailScreen(review: Review) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
-        Column {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Box {
                 Image(
                     painter = painterResource(id = review.imageRes),
                     contentDescription = review.nama,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp),
+                        .height(200.dp),
                     contentScale = ContentScale.Crop
                 )
 
@@ -104,8 +168,8 @@ fun DetailScreen(review: Review) {
                         )
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Favorite,
-                        contentDescription = if (isFavorite) "Favorite" else "Not Favorite",
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favorite Icon",
                         tint = if (isFavorite) Color.White else Color.Red
                     )
                 }
@@ -114,30 +178,31 @@ fun DetailScreen(review: Review) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = review.nama,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = review.kategori,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Deskripsi: ${review.deskripsi}",
+                    text = review.deskripsi,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Kategori: ${review.kategori}",
                     style = MaterialTheme.typography.bodyLarge
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { /* Aksi Read More */ },
+                    onClick = { /* Aksi Pesan */ },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Read More")
+                    Text(text = "Pesan Sekarang")
                 }
             }
         }
