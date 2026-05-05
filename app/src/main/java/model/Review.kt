@@ -1,13 +1,8 @@
 package com.example.praktam_2417051022.model
 
-import androidx.annotation.DrawableRes
-
-/**
- * Data class untuk merepresentasikan entitas Review[cite: 125].
- */
 data class Review(
     val nama: String,
     val kategori: String,
     val deskripsi: String,
-    @DrawableRes val imageRes: Int
+    val imageRes: Int
 )
