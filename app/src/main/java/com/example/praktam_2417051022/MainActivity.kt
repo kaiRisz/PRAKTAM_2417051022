@@ -4,17 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -23,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,11 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import com.example.praktam_2417051022.model.Review
 import com.example.praktam_2417051022.model.ReviewSource
+import com.example.praktam_2417051022.network.RetrofitClient
 import com.example.praktam_2417051022.ui.theme.PRAKTAM_2417051022Theme
 
 class MainActivity : ComponentActivity() {
@@ -44,12 +38,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             PRAKTAM_2417051022Theme {
                 val navController = rememberNavController()
-
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavigation(
-                        navController = navController,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    AppNavigation(navController = navController, modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -58,17 +48,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(
-        navController = navController,
-        startDestination = "home"
-    ) {
+    var reviews by remember { mutableStateOf<List<Review>>(emptyList()) }
+
+    NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            DaftarReviewScreen(navController = navController, modifier = modifier)
+            DaftarReviewScreen(navController = navController, modifier = modifier) { fetched ->
+                reviews = fetched
+            }
         }
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
-            val review = ReviewSource.dummyReview.find { it.nama == nama }
-
+            val review = reviews.find { it.nama == nama }
             if (review != null) {
                 DetailScreen(review = review, navController = navController, isFullScreen = true)
             }
@@ -77,58 +67,68 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
 }
 
 @Composable
-fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize().statusBarsPadding(),
-        contentPadding = PaddingValues(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        item {
-            Text(
-                text = "Rekomendasi Populer",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(ReviewSource.dummyReview) { review ->
-                    ReviewRowItem(review = review, navController = navController)
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "Daftar Review Anime",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
+fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifier, onReviewsLoaded: (List<Review>) -> Unit) {
+    var reviews by remember { mutableStateOf<List<Review>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
-        items(ReviewSource.dummyReview) { review ->
-            ReviewItemHorizontal(review = review, navController = navController)
+    LaunchedEffect(Unit) {
+        try {
+            val result = RetrofitClient.instance.getReviews()
+            reviews = result
+            onReviewsLoaded(result)
+            isLoading = false
+        } catch (e: Exception) {
+            isLoading = false
+        }
+    }
+
+    if (isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        LazyColumn(
+            modifier = modifier.fillMaxSize().statusBarsPadding(),
+            contentPadding = PaddingValues(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            item {
+                Text("Rekomendasi Populer", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(reviews) { ReviewRowItem(it, navController) }
+                }
+                Spacer(Modifier.height(32.dp))
+                Text("Daftar Review Anime", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            }
+            items(reviews) { ReviewItemHorizontal(it, navController) }
         }
     }
 }
 
 @Composable
+fun DynamicImage(imageName: String, description: String, modifier: Modifier) {
+    val context = LocalContext.current
+    val resId = ReviewSource.getResourceId(context, imageName)
+    Image(
+        painter = painterResource(id = if (resId != 0) resId else R.drawable.aot),
+        contentDescription = description,
+        modifier = modifier,
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
 fun ReviewRowItem(review: Review, navController: NavController) {
     Card(
-        modifier = Modifier
-            .width(180.dp)
-            .clickable { navController.navigate("detail/${review.nama}") }, // Navigasi ke detail[cite: 1]
+        modifier = Modifier.width(180.dp).clickable { navController.navigate("detail/${review.nama}") },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            Image(
-                painter = painterResource(id = review.imageRes),
-                contentDescription = review.nama,
-                modifier = Modifier.fillMaxWidth().height(120.dp),
-                contentScale = ContentScale.Crop
-            )
+            DynamicImage(review.imageResName, review.nama, Modifier.fillMaxWidth().height(120.dp))
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(text = review.nama, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = review.kategori, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+                Text(review.nama, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text(review.kategori, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
             }
         }
     }
@@ -137,30 +137,16 @@ fun ReviewRowItem(review: Review, navController: NavController) {
 @Composable
 fun ReviewItemHorizontal(review: Review, navController: NavController) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { navController.navigate("detail/${review.nama}") },
+        modifier = Modifier.fillMaxWidth().clickable { navController.navigate("detail/${review.nama}") },
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = review.imageRes),
-                contentDescription = review.nama,
-                modifier = Modifier.size(110.dp),
-                contentScale = ContentScale.Crop
-            )
+            DynamicImage(review.imageResName, review.nama, Modifier.size(110.dp))
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(text = review.nama, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = review.kategori, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = review.deskripsi,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Text(review.nama, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(review.kategori, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                Text(review.deskripsi, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -169,68 +155,33 @@ fun ReviewItemHorizontal(review: Review, navController: NavController) {
 @Composable
 fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boolean = false) {
     val scrollState = rememberScrollState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(scrollState)
-    ) {
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(scrollState)) {
         Box {
-            Image(
-                painter = painterResource(id = review.imageRes),
-                contentDescription = review.nama,
-                modifier = Modifier.fillMaxWidth().height(320.dp),
-                contentScale = ContentScale.Crop
-            )
-
+            DynamicImage(review.imageResName, review.nama, Modifier.fillMaxWidth().height(320.dp))
             if (isFullScreen) {
                 SmallFloatingActionButton(
                     onClick = { navController.popBackStack() },
                     modifier = Modifier.padding(16.dp),
                     containerColor = Color.White.copy(alpha = 0.7f),
                     shape = CircleShape
-                ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
+                ) { Icon(Icons.Default.ArrowBack, "Back") }
             }
         }
-
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(text = review.nama, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-
+            Text(review.nama, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             Surface(
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.padding(vertical = 8.dp)
             ) {
-                Text(
-                    text = review.kategori,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                Text(review.kategori, Modifier.padding(horizontal = 12.dp, vertical = 4.dp), style = MaterialTheme.typography.labelLarge)
             }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-            Text(text = "Sinopsis & Review", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = review.deskripsi,
-                style = MaterialTheme.typography.bodyLarge,
-                lineHeight = 24.sp
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(text = "Kembali ke Beranda")
+            HorizontalDivider(Modifier.padding(vertical = 16.dp))
+            Text("Sinopsis & Review", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(review.deskripsi, style = MaterialTheme.typography.bodyLarge, lineHeight = 24.sp)
+            Spacer(Modifier.height(32.dp))
+            Button(onClick = { navController.popBackStack() }, Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(12.dp)) {
+                Text("Kembali ke Beranda")
             }
         }
     }
