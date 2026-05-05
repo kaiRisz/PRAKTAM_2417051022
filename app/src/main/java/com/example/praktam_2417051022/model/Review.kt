@@ -1,10 +1,10 @@
 package com.example.praktam_2417051022.model
 
-import androidx.annotation.DrawableRes
+import com.google.gson.annotations.SerializedName
 
 data class Review(
-    val nama: String,
-    val deskripsi: String,
-    val kategori: String,
-    @DrawableRes val imageRes: Int
+    @SerializedName("nama") val nama: String,
+    @SerializedName("kategori") val kategori: String,
+    @SerializedName("deskripsi") val deskripsi: String,
+    @SerializedName("image_url") val imageUrl: String
 )
