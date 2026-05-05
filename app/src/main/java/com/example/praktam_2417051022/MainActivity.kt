@@ -36,6 +36,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.praktam_2417051022.model.Review
 import com.example.praktam_2417051022.model.ReviewSource
 import com.example.praktam_2417051022.ui.theme.PRAKTAM_2417051022Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,7 +117,7 @@ fun ReviewRowItem(review: Review, navController: NavController) {
     Card(
         modifier = Modifier
             .width(180.dp)
-            .clickable { navController.navigate("detail/${review.nama}") }, // Navigasi ke detail[cite: 1]
+            .clickable { navController.navigate("detail/${review.nama}") },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -169,69 +171,110 @@ fun ReviewItemHorizontal(review: Review, navController: NavController) {
 @Composable
 fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boolean = false) {
     val scrollState = rememberScrollState()
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(scrollState)
-    ) {
-        Box {
-            Image(
-                painter = painterResource(id = review.imageRes),
-                contentDescription = review.nama,
-                modifier = Modifier.fillMaxWidth().height(320.dp),
-                contentScale = ContentScale.Crop
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(scrollState)
+        ) {
+            Box {
+                Image(
+                    painter = painterResource(id = review.imageRes),
+                    contentDescription = review.nama,
+                    modifier = Modifier.fillMaxWidth().height(320.dp),
+                    contentScale = ContentScale.Crop
+                )
 
-            if (isFullScreen) {
-                SmallFloatingActionButton(
-                    onClick = { navController.popBackStack() },
-                    modifier = Modifier.padding(16.dp),
-                    containerColor = Color.White.copy(alpha = 0.7f),
-                    shape = CircleShape
-                ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                if (isFullScreen) {
+                    SmallFloatingActionButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(16.dp),
+                        containerColor = Color.White.copy(alpha = 0.7f),
+                        shape = CircleShape
+                    ) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
                 }
             }
-        }
 
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(text = review.nama, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text(text = review.nama, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
 
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = review.kategori,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                Text(text = "Sinopsis & Review", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = review.kategori,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    text = review.deskripsi,
+                    style = MaterialTheme.typography.bodyLarge,
+                    lineHeight = 24.sp
                 )
-            }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            Text(text = "Sinopsis & Review", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            isLoading = true
+                            delay(2000)
+                            isLoading = false
+                            snackbarHostState.showSnackbar("Berhasil menambahkan ${review.nama} ke favorit!")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Memproses...")
+                    } else {
+                        Text(text = "Simpan ke Favorit")
+                    }
+                }
 
-            Text(
-                text = review.deskripsi,
-                style = MaterialTheme.typography.bodyLarge,
-                lineHeight = 24.sp
-            )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
+                OutlinedButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isLoading
+                ) {
+                    Text(text = "Kembali ke Beranda")
+                }
 
-            Button(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(text = "Kembali ke Beranda")
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
+        )
     }
 }
