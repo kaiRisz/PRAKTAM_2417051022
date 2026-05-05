@@ -30,6 +30,8 @@ import coil.compose.AsyncImage
 import com.example.praktam_2417051022.model.Review
 import com.example.praktam_2417051022.network.RetrofitClient
 import com.example.praktam_2417051022.ui.theme.PRAKTAM_2417051022Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -221,5 +223,10 @@ fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boo
                 Text("Kembali ke Beranda")
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
+        )
     }
 }
