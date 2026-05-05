@@ -6,5 +6,5 @@ data class Review(
     @SerializedName("nama") val nama: String,
     @SerializedName("kategori") val kategori: String,
     @SerializedName("deskripsi") val deskripsi: String,
-    @SerializedName("image_name") val imageResName: String
+    @SerializedName("image_url") val imageUrl: String
 )

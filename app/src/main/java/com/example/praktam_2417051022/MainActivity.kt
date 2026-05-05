@@ -17,17 +17,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import coil.compose.AsyncImage
 import com.example.praktam_2417051022.model.Review
-import com.example.praktam_2417051022.model.ReviewSource
 import com.example.praktam_2417051022.network.RetrofitClient
 import com.example.praktam_2417051022.ui.theme.PRAKTAM_2417051022Theme
 
@@ -70,6 +70,7 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
 fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifier, onReviewsLoaded: (List<Review>) -> Unit) {
     var reviews by remember { mutableStateOf<List<Review>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
@@ -77,14 +78,38 @@ fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifi
             reviews = result
             onReviewsLoaded(result)
             isLoading = false
+            isError = false
         } catch (e: Exception) {
             isLoading = false
+            isError = true
         }
     }
 
     if (isLoading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
+        }
+    } else if (isError || reviews.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize().padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Gagal Memuat Data",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Pastikan koneksi internet Anda menyala",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     } else {
         LazyColumn(
@@ -94,7 +119,10 @@ fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifi
         ) {
             item {
                 Text("Rekomendasi Populer", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                LazyRow(
+                    modifier = Modifier.padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     items(reviews) { ReviewRowItem(it, navController) }
                 }
                 Spacer(Modifier.height(32.dp))
@@ -106,18 +134,6 @@ fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifi
 }
 
 @Composable
-fun DynamicImage(imageName: String, description: String, modifier: Modifier) {
-    val context = LocalContext.current
-    val resId = ReviewSource.getResourceId(context, imageName)
-    Image(
-        painter = painterResource(id = if (resId != 0) resId else R.drawable.aot),
-        contentDescription = description,
-        modifier = modifier,
-        contentScale = ContentScale.Crop
-    )
-}
-
-@Composable
 fun ReviewRowItem(review: Review, navController: NavController) {
     Card(
         modifier = Modifier.width(180.dp).clickable { navController.navigate("detail/${review.nama}") },
@@ -125,7 +141,14 @@ fun ReviewRowItem(review: Review, navController: NavController) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            DynamicImage(review.imageResName, review.nama, Modifier.fillMaxWidth().height(120.dp))
+            AsyncImage(
+                model = review.imageUrl,
+                contentDescription = review.nama,
+                placeholder = painterResource(id = R.drawable.aot),
+                error = painterResource(id = R.drawable.aot),
+                modifier = Modifier.fillMaxWidth().height(120.dp),
+                contentScale = ContentScale.Crop
+            )
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(review.nama, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1)
                 Text(review.kategori, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
@@ -142,7 +165,14 @@ fun ReviewItemHorizontal(review: Review, navController: NavController) {
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            DynamicImage(review.imageResName, review.nama, Modifier.size(110.dp))
+            AsyncImage(
+                model = review.imageUrl,
+                contentDescription = review.nama,
+                placeholder = painterResource(id = R.drawable.aot),
+                error = painterResource(id = R.drawable.aot),
+                modifier = Modifier.size(110.dp),
+                contentScale = ContentScale.Crop
+            )
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(review.nama, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(review.kategori, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
@@ -157,7 +187,14 @@ fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boo
     val scrollState = rememberScrollState()
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(scrollState)) {
         Box {
-            DynamicImage(review.imageResName, review.nama, Modifier.fillMaxWidth().height(320.dp))
+            AsyncImage(
+                model = review.imageUrl,
+                contentDescription = review.nama,
+                placeholder = painterResource(id = R.drawable.aot),
+                error = painterResource(id = R.drawable.aot),
+                modifier = Modifier.fillMaxWidth().height(320.dp),
+                contentScale = ContentScale.Crop
+            )
             if (isFullScreen) {
                 SmallFloatingActionButton(
                     onClick = { navController.popBackStack() },
