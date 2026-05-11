@@ -1,4 +1,4 @@
-package com.example.praktam_2417051022.model
+package com.example.praktam_2417051022.data.model
 
 import com.google.gson.annotations.SerializedName
 
