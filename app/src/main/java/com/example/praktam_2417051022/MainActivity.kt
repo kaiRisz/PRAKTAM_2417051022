@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,11 +27,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import coil.compose.AsyncImage
-import com.example.praktam_2417051022.model.Review
-import com.example.praktam_2417051022.network.RetrofitClient
+import com.example.praktam_2417051022.data.model.Review
+import com.example.praktam_2417051022.data.repository.FoodRepository
 import com.example.praktam_2417051022.ui.theme.PRAKTAM_2417051022Theme
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,22 +59,27 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
             val review = reviews.find { it.nama == nama }
-            if (review != null) {
-                DetailScreen(review = review, navController = navController, isFullScreen = true)
+            review?.let {
+                DetailScreen(review = it, navController = navController, isFullScreen = true)
             }
         }
     }
 }
 
 @Composable
-fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifier, onReviewsLoaded: (List<Review>) -> Unit) {
+fun DaftarReviewScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    onReviewsLoaded: (List<Review>) -> Unit
+) {
+    val repository = remember { FoodRepository() }
     var reviews by remember { mutableStateOf<List<Review>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
-            val result = RetrofitClient.instance.getReviews()
+            val result = repository.getFoods()
             reviews = result
             onReviewsLoaded(result)
             isLoading = false
@@ -87,51 +90,63 @@ fun DaftarReviewScreen(navController: NavController, modifier: Modifier = Modifi
         }
     }
 
-    if (isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+    when {
+        isLoading -> LoadingView()
+        isError || reviews.isEmpty() -> ErrorView()
+        else -> ContentView(reviews, navController, modifier)
+    }
+}
+
+@Composable
+fun LoadingView() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun ErrorView() {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Gagal Memuat Data",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.Red
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Pastikan koneksi internet Anda menyala",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
         }
-    } else if (isError || reviews.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize().padding(32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Gagal Memuat Data",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Red
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Pastikan koneksi internet Anda menyala",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+    }
+}
+
+@Composable
+fun ContentView(reviews: List<Review>, navController: NavController, modifier: Modifier) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize().statusBarsPadding(),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        item {
+            Text("Rekomendasi Populer", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            LazyRow(
+                modifier = Modifier.padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(reviews) { ReviewRowItem(it, navController) }
             }
+            Spacer(Modifier.height(32.dp))
+            Text("Daftar Review Anime", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
         }
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxSize().statusBarsPadding(),
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            item {
-                Text("Rekomendasi Populer", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                LazyRow(
-                    modifier = Modifier.padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(reviews) { ReviewRowItem(it, navController) }
-                }
-                Spacer(Modifier.height(32.dp))
-                Text("Daftar Review Anime", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-            }
-            items(reviews) { ReviewItemHorizontal(it, navController) }
-        }
+        items(reviews) { ReviewItemHorizontal(it, navController) }
     }
 }
 
@@ -140,14 +155,12 @@ fun ReviewRowItem(review: Review, navController: NavController) {
     Card(
         modifier = Modifier.width(180.dp).clickable { navController.navigate("detail/${review.nama}") },
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column {
             AsyncImage(
                 model = review.imageUrl,
-                contentDescription = review.nama,
-                placeholder = painterResource(id = R.drawable.aot),
-                error = painterResource(id = R.drawable.aot),
+                contentDescription = null,
                 modifier = Modifier.fillMaxWidth().height(120.dp),
                 contentScale = ContentScale.Crop
             )
@@ -169,9 +182,7 @@ fun ReviewItemHorizontal(review: Review, navController: NavController) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
                 model = review.imageUrl,
-                contentDescription = review.nama,
-                placeholder = painterResource(id = R.drawable.aot),
-                error = painterResource(id = R.drawable.aot),
+                contentDescription = null,
                 modifier = Modifier.size(110.dp),
                 contentScale = ContentScale.Crop
             )
@@ -191,9 +202,7 @@ fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boo
         Box {
             AsyncImage(
                 model = review.imageUrl,
-                contentDescription = review.nama,
-                placeholder = painterResource(id = R.drawable.aot),
-                error = painterResource(id = R.drawable.aot),
+                contentDescription = null,
                 modifier = Modifier.fillMaxWidth().height(320.dp),
                 contentScale = ContentScale.Crop
             )
@@ -203,7 +212,9 @@ fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boo
                     modifier = Modifier.padding(16.dp),
                     containerColor = Color.White.copy(alpha = 0.7f),
                     shape = CircleShape
-                ) { Icon(Icons.Default.ArrowBack, "Back") }
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
             }
         }
         Column(modifier = Modifier.padding(20.dp)) {
@@ -223,10 +234,5 @@ fun DetailScreen(review: Review, navController: NavController, isFullScreen: Boo
                 Text("Kembali ke Beranda")
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
-        )
     }
 }
