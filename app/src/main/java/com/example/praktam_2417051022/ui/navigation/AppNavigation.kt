@@ -7,17 +7,33 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.praktam_2417051022.data.model.Review
 import com.example.praktam_2417051022.ui.screen.detail.DetailScreen
+import com.example.praktam_2417051022.ui.screen.favorite.FavoriteScreen
 import com.example.praktam_2417051022.ui.screen.home.HomeScreen
+import com.example.praktam_2417051022.ui.screen.profile.ProfileScreen
+import com.example.praktam_2417051022.ui.screen.search.SearchScreen
+import com.example.praktam_2417051022.ui.screen.splash.SplashScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
     var reviews by remember { mutableStateOf<List<Review>>(emptyList()) }
 
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") {
+    NavHost(navController = navController, startDestination = "splash") {
+        composable("splash") {
+            SplashScreen(navController = navController)
+        }
+        composable(Screen.Home.route) {
             HomeScreen(navController = navController, modifier = modifier) { fetched ->
                 reviews = fetched
             }
+        }
+        composable(Screen.Search.route) {
+            SearchScreen()
+        }
+        composable(Screen.Favorite.route) {
+            FavoriteScreen()
+        }
+        composable(Screen.Profile.route) {
+            ProfileScreen()
         }
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
