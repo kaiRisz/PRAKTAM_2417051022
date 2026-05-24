@@ -28,43 +28,41 @@ import com.example.praktam_2417051022.ui.components.ReviewRowItem
 @Composable
 fun HomeScreen(
     navController: NavController,
+    onReviewsLoaded: (List<Review>) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(),
-    onReviewsLoaded: (List<Review>) -> Unit
+    viewModel: HomeViewModel = viewModel()
 ) {
-    if (!viewModel.isLoading && !viewModel.isError) {
-        onReviewsLoaded(viewModel.reviews)
+    val reviews by viewModel.reviews
+    val isLoading by viewModel.isLoading
+    val isError by viewModel.isError
+
+    LaunchedEffect(reviews) {
+        if (reviews.isNotEmpty()) {
+            onReviewsLoaded(reviews)
+        }
     }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFFF8F5))
+            .background(Color(0xFFFFF8F5)),
+        contentAlignment = Alignment.Center
     ) {
-        when {
-            viewModel.isLoading -> LoadingView()
-            viewModel.isError || viewModel.reviews.isEmpty() -> ErrorView(onRetry = { viewModel.fetchReviews() })
-            else -> ContentView(viewModel.reviews, navController)
-        }
-    }
-}
-
-@Composable
-fun LoadingView() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(color = Color(0xFF8B1E22))
-    }
-}
-
-@Composable
-fun ErrorView(onRetry: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Gagal Memuat Data", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color(0xFF8B1E22))
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B1E22))) {
-                Text("Coba Lagi", color = Color.White)
+        if (isLoading) {
+            CircularProgressIndicator(color = Color(0xFF8B1E22))
+        } else if (isError) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "Gagal memuat data", color = Color.Red, fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.fetchReviews() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B1E22))
+                ) {
+                    Text("Coba Lagi")
+                }
             }
+        } else {
+            ContentView(reviews = reviews, navController = navController)
         }
     }
 }
@@ -99,14 +97,14 @@ fun ContentView(reviews: List<Review>, navController: NavController) {
                     )
                 }
                 IconButton(
-                    onClick = { /* Handle Notif */ },
+                    onClick = {},
                     modifier = Modifier
                         .background(Color.White, shape = CircleShape)
                         .size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notifikasi",
+                        contentDescription = null,
                         tint = Color(0xFF2B2B2B)
                     )
                 }
@@ -121,7 +119,7 @@ fun ContentView(reviews: List<Review>, navController: NavController) {
                     .fillMaxWidth()
                     .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
                 placeholder = { Text("Cari anime, genre, atau studio...", color = Color.Gray, fontSize = 14.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                 singleLine = true,
                 shape = RoundedCornerShape(28.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -151,7 +149,7 @@ fun ContentView(reviews: List<Review>, navController: NavController) {
                         fontSize = 12.sp,
                         color = Color(0xFF8B1E22),
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { /* See All */ }
+                        modifier = Modifier.clickable {}
                     )
                 }
 

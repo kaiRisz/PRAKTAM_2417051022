@@ -25,6 +25,9 @@ fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,39 +52,76 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                if (emailError != null) emailError = null
+            },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+            isError = emailError != null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF8B1E22),
                 focusedLabelColor = Color(0xFF8B1E22)
             )
         )
+        if (emailError != null) {
+            Text(
+                text = emailError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                if (passwordError != null) passwordError = null
+            },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Password") },
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             visualTransformation = PasswordVisualTransformation(),
+            isError = passwordError != null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF8B1E22),
                 focusedLabelColor = Color(0xFF8B1E22)
             )
         )
+        if (passwordError != null) {
+            Text(
+                text = passwordError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
-                navController.navigate(Screen.Home.route) {
-                    popUpTo("login") { inclusive = true }
+                emailError = when {
+                    email.isBlank() -> "Email tidak boleh kosong"
+                    !email.contains("@") -> "Email harus menggunakan karakter '@'"
+                    else -> null
+                }
+                passwordError = if (password.length < 6) "Password minimal harus 6 karakter" else null
+
+                if (emailError == null && passwordError == null) {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo("login") { inclusive = true }
+                    }
                 }
             },
             modifier = Modifier
@@ -113,6 +153,10 @@ fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -137,52 +181,106 @@ fun RegisterScreen(navController: NavController) {
 
         OutlinedTextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = {
+                name = it
+                if (nameError != null) nameError = null
+            },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Nama Lengkap") },
             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+            isError = nameError != null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF8B1E22),
                 focusedLabelColor = Color(0xFF8B1E22)
             )
         )
+        if (nameError != null) {
+            Text(
+                text = nameError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                if (emailError != null) emailError = null
+            },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+            isError = emailError != null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF8B1E22),
                 focusedLabelColor = Color(0xFF8B1E22)
             )
         )
+        if (emailError != null) {
+            Text(
+                text = emailError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                if (passwordError != null) passwordError = null
+            },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Password") },
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             visualTransformation = PasswordVisualTransformation(),
+            isError = passwordError != null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF8B1E22),
                 focusedLabelColor = Color(0xFF8B1E22)
             )
         )
+        if (passwordError != null) {
+            Text(
+                text = passwordError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { navController.popBackStack() },
+            onClick = {
+                nameError = if (name.isBlank()) "Nama tidak boleh kosong" else null
+                emailError = when {
+                    email.isBlank() -> "Email tidak boleh kosong"
+                    !email.contains("@") -> "Email harus menggunakan karakter '@'"
+                    else -> null
+                }
+                passwordError = if (password.length < 6) "Password minimal harus 6 karakter" else null
+
+                if (nameError == null && emailError == null && passwordError == null) {
+                    navController.popBackStack()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),

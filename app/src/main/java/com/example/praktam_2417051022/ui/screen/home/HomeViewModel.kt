@@ -1,25 +1,23 @@
 package com.example.praktam_2417051022.ui.screen.home
 
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.praktam_2417051022.data.api.RetrofitClient
 import com.example.praktam_2417051022.data.model.Review
-import com.example.praktam_2417051022.data.repository.ReviewRepository
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
-    private val repository = ReviewRepository()
 
-    var reviews by mutableStateOf<List<Review>>(emptyList())
-        private set
+    private val _reviews = mutableStateOf<List<Review>>(emptyList())
+    val reviews: State<List<Review>> = _reviews
 
-    var isLoading by mutableStateOf(true)
-        private set
+    private val _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> = _isLoading
 
-    var isError by mutableStateOf(false)
-        private set
+    private val _isError = mutableStateOf(false)
+    val isError: State<Boolean> = _isError
 
     init {
         fetchReviews()
@@ -27,15 +25,15 @@ class HomeViewModel : ViewModel() {
 
     fun fetchReviews() {
         viewModelScope.launch {
-            isLoading = true
-            isError = false
+            _isLoading.value = true
+            _isError.value = false
             try {
-                val result = repository.getReviews()
-                reviews = result
-                isLoading = false
+                val response = RetrofitClient.instance.getReviews()
+                _reviews.value = response
             } catch (e: Exception) {
-                isLoading = false
-                isError = true
+                _isError.value = true
+            } finally {
+                _isLoading.value = false
             }
         }
     }

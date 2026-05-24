@@ -3,6 +3,7 @@ package com.example.praktam_2417051022.ui.screen.profile
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,10 +22,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.praktam_2417051022.R
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(navController: NavController, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -79,17 +81,41 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ProfileMenuItem(icon = Icons.Default.Settings, title = "Pengaturan Akun")
-            ProfileMenuItem(icon = Icons.Default.Info, title = "Tentang Aplikasi")
-            ProfileMenuItem(icon = Icons.Default.ExitToApp, title = "Keluar", isLogout = true)
+            ProfileMenuItem(
+                icon = Icons.Default.Settings,
+                title = "Pengaturan Akun",
+                onClick = {}
+            )
+            ProfileMenuItem(
+                icon = Icons.Default.Info,
+                title = "Tentang Aplikasi",
+                onClick = {}
+            )
+            ProfileMenuItem(
+                icon = Icons.Default.ExitToApp,
+                title = "Keluar",
+                isLogout = true,
+                onClick = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-fun ProfileMenuItem(icon: ImageVector, title: String, isLogout: Boolean = false) {
+fun ProfileMenuItem(
+    icon: ImageVector,
+    title: String,
+    isLogout: Boolean = false,
+    onClick: () -> Unit
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(1.dp)

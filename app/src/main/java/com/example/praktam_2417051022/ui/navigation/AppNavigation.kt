@@ -54,7 +54,10 @@ fun AppNavigation(
             )
         }
         composable(Screen.Profile.route) {
-            ProfileScreen(modifier = modifier)
+            ProfileScreen(
+                navController = navController,
+                modifier = modifier
+            )
         }
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
