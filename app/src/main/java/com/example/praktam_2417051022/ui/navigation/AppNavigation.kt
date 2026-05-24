@@ -1,6 +1,6 @@
 package com.example.praktam_2417051022.ui.navigation
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,23 +14,36 @@ import com.example.praktam_2417051022.ui.screen.search.SearchScreen
 import com.example.praktam_2417051022.ui.screen.splash.SplashScreen
 
 @Composable
-fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
-    var reviews by remember { mutableStateOf<List<Review>>(emptyList()) }
-
+fun AppNavigation(
+    navController: NavHostController,
+    reviews: List<Review>,
+    onReviewsLoaded: (List<Review>) -> Unit,
+    modifier: Modifier = Modifier
+) {
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
             SplashScreen(navController = navController)
         }
         composable(Screen.Home.route) {
-            HomeScreen(navController = navController, modifier = modifier) { fetched ->
-                reviews = fetched
-            }
+            HomeScreen(
+                navController = navController,
+                modifier = modifier,
+                onReviewsLoaded = onReviewsLoaded
+            )
         }
         composable(Screen.Search.route) {
-            SearchScreen()
+            SearchScreen(
+                navController = navController,
+                reviews = reviews,
+                modifier = modifier
+            )
         }
         composable(Screen.Favorite.route) {
-            FavoriteScreen()
+            FavoriteScreen(
+                navController = navController,
+                reviews = reviews,
+                modifier = modifier
+            )
         }
         composable(Screen.Profile.route) {
             ProfileScreen()

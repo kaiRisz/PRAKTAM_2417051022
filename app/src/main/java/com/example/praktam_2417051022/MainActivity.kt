@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.praktam_2417051022.data.model.Review
 import com.example.praktam_2417051022.ui.navigation.AppNavigation
 import com.example.praktam_2417051022.ui.navigation.Screen
 import com.example.praktam_2417051022.ui.theme.PRAKTAM_2417051022Theme
@@ -26,8 +30,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
+                var reviewsState by remember { mutableStateOf<List<Review>>(emptyList()) }
 
-                // Daftar halaman yang BOLEH menampilkan Bottom Navigation Bar
                 val navigationItems = listOf(
                     Screen.Home,
                     Screen.Search,
@@ -38,10 +42,9 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        // Hanya tampilkan bottom bar jika route saat ini ada di daftar navigationItems
                         if (navigationItems.any { it.route == currentRoute }) {
                             NavigationBar(
-                                containerColor = Color(0xFFFFF8F5) // Warna cream dari desainmu
+                                containerColor = Color(0xFFFFF8F5)
                             ) {
                                 navigationItems.forEach { item ->
                                     val selected = currentRoute == item.route
@@ -62,8 +65,8 @@ class MainActivity : ComponentActivity() {
                                         label = { Text(item.title) },
                                         colors = NavigationBarItemDefaults.colors(
                                             selectedIconColor = Color.White,
-                                            selectedTextColor = Color(0xFF8B1E22), // Warna teks aktif marun
-                                            indicatorColor = Color(0xFF8B1E22), // Background icon aktif marun
+                                            selectedTextColor = Color(0xFF8B1E22),
+                                            indicatorColor = Color(0xFF8B1E22),
                                             unselectedIconColor = Color.Gray,
                                             unselectedTextColor = Color.Gray
                                         )
@@ -75,6 +78,10 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     AppNavigation(
                         navController = navController,
+                        reviews = reviewsState,
+                        onReviewsLoaded = { fetchedReviews ->
+                            reviewsState = fetchedReviews
+                        },
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
