@@ -81,7 +81,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
         ) {
             ProfileMenuItem(icon = Icons.Default.Settings, title = "Pengaturan Akun")
             ProfileMenuItem(icon = Icons.Default.Info, title = "Tentang Aplikasi")
-            ProfileMenuItem(icon = Icons.Default.ExitToApp, title = "Keluar Keluar", isLogout = true)
+            ProfileMenuItem(icon = Icons.Default.ExitToApp, title = "Keluar", isLogout = true)
         }
     }
 }

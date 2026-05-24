@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.praktam_2417051022.data.model.Review
+import com.example.praktam_2417051022.ui.screen.auth.LoginScreen
+import com.example.praktam_2417051022.ui.screen.auth.RegisterScreen
 import com.example.praktam_2417051022.ui.screen.detail.DetailScreen
 import com.example.praktam_2417051022.ui.screen.favorite.FavoriteScreen
 import com.example.praktam_2417051022.ui.screen.home.HomeScreen
@@ -20,9 +22,15 @@ fun AppNavigation(
     onReviewsLoaded: (List<Review>) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    NavHost(navController = navController, startDestination = "splash") {
+    NavHost(navController = navController, startDestination = "login") {
         composable("splash") {
             SplashScreen(navController = navController)
+        }
+        composable("login") {
+            LoginScreen(navController = navController)
+        }
+        composable("register") {
+            RegisterScreen(navController = navController)
         }
         composable(Screen.Home.route) {
             HomeScreen(
@@ -46,7 +54,7 @@ fun AppNavigation(
             )
         }
         composable(Screen.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(modifier = modifier)
         }
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
