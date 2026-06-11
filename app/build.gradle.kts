@@ -5,11 +5,9 @@ plugins {
 
 android {
     namespace = "com.example.praktam_2417051022"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+
+    // Memperbaiki format compileSdk 36 agar rapi dan standar tanpa blok minorApiLevel
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.praktam_2417051022"
@@ -40,6 +38,7 @@ android {
 }
 
 dependencies {
+    // AndroidX & UI Compose Utama (Menggunakan Version Catalog bawaan)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -48,6 +47,26 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // Menggunakan variable catalog yang sudah terdeteksi ada di libs project kamu
+    // Ini otomatis menghilangkan semua warning "Use version catalog instead"
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.coil.compose)
+
+    // Ikon material tambahan (Opsional, jika tidak ada di catalog, kita tulis manual yang paling update)
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
+
+    // Library Network Retrofit & Data Parser Gson (Menggunakan versi stabil terbaru untuk hilangkan warning)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.11.0")
+
+    // Dependensi Room Database Lokal (Menggunakan versi stabil terbaru)
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+
+    // Testing & Debugging
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -55,17 +74,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.navigation:navigation-compose:2.7.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("io.coil-kt:coil-compose:2.6.0")
-<<<<<<< HEAD
-
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-=======
-    implementation("com.google.code.gson:gson:2.10.1")
->>>>>>> be73391 (bikin fitur CRUD)
 }

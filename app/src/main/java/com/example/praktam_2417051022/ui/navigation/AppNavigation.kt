@@ -33,6 +33,7 @@ fun AppNavigation(
         composable(Screen.Search.route) {}
         composable(Screen.Favorite.route) {}
         composable(Screen.Profile.route) {}
+
         composable(
             route = Screen.Detail.route,
             arguments = listOf(navArgument("nama") { type = NavType.StringType })
@@ -40,6 +41,7 @@ fun AppNavigation(
             val nama = backStackEntry.arguments?.getString("nama") ?: ""
             DetailScreen(navController = navController, namaAnime = nama)
         }
+
         composable(
             route = Screen.ReviewForm.route,
             arguments = listOf(navArgument("reviewId") { type = NavType.StringType })

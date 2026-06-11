@@ -11,12 +11,10 @@ class ReviewRepository {
         private const val PREFS_NAME = "review_prefs"
         private const val KEY_REVIEWS = "list_reviews"
 
-        // Mempertahankan satu list statis di memori runtime
         private var reviewList = mutableListOf<Review>()
         private var isInitialized = false
     }
 
-    // Fungsi untuk inisialisasi data awal jika SharedPreferences masih kosong
     fun initialize(context: Context) {
         if (isInitialized) return
 
@@ -28,7 +26,7 @@ class ReviewRepository {
             val type = object : TypeToken<MutableList<Review>>() {}.type
             reviewList = gson.fromJson(json, type)
         } else {
-            // Data tiruan awal (dummy data) jika aplikasi baru pertama kali di-install
+            // Data tiruan awal (dummy data) saat aplikasi pertama kali berjalan
             reviewList = mutableListOf(
                 Review("1", "AOT (Attack on Titan)", "Anime Action / Dark Fantasy", "Attack on Titan bermula di dunia di mana umat manusia hidup di dalam kota yang dikelilingi oleh tembok raksasa...", "https://images.justwatch.com/poster/305541743/s284/attack-on-titan.webp", 5.0),
                 Review("2", "Fate Stay Night: UBW", "Fantasy / Supernatural", "Perang Cawan Suci adalah ritual rahasia di mana tujuh penyihir memanggil roh pahlawan...", "https://m.media-amazon.com/images/M/MV5BMTczNTcxMTYxM15BMl5BanBnXkFtZTgwOTAyNjk0NDE@._V1_.jpg", 4.8),

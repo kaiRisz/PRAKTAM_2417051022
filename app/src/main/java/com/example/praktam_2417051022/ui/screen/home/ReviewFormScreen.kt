@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,7 +21,6 @@ fun ReviewFormScreen(navController: NavController, reviewId: String) {
     val context = LocalContext.current
     val repository = remember { ReviewRepository() }
 
-    // Inisialisasi data repository terlebih dahulu agar sinkron dengan SharedPreferences
     LaunchedEffect(Unit) {
         repository.initialize(context)
     }
@@ -40,7 +39,7 @@ fun ReviewFormScreen(navController: NavController, reviewId: String) {
                 title = { Text(if (isEditMode) "Edit Review Anime" else "Tambah Review Anime") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFF8F5))
@@ -60,7 +59,7 @@ fun ReviewFormScreen(navController: NavController, reviewId: String) {
                 onValueChange = { nama = it },
                 label = { Text("Nama Anime") },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isEditMode // Nama tidak boleh diubah jika dalam mode edit (sebagai key)
+                enabled = !isEditMode
             )
             OutlinedTextField(
                 value = kategori,
@@ -83,14 +82,17 @@ fun ReviewFormScreen(navController: NavController, reviewId: String) {
             )
             Button(
                 onClick = {
+                    val generatedId = existingReview?.id ?: (System.currentTimeMillis() / 1000).toString()
+
                     val review = Review(
-                        id = existingReview?.id ?: System.currentTimeMillis().toString(),
+                        id = generatedId,
                         nama = nama,
                         kategori = kategori,
                         deskripsi = deskripsi,
                         imageUrl = imageUrl,
                         rating = existingReview?.rating ?: 5.0
                     )
+
                     if (isEditMode) {
                         repository.updateReview(context, reviewId, review)
                     } else {
