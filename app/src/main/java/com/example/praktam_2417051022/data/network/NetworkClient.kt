@@ -1,10 +1,9 @@
-package com.example.praktam_2417051022.data.api
+package com.example.praktam_2417051022.data.network
 
-import com.example.praktam_2417051022.data.network.ApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitClient {
+object NetworkClient {
     private const val BASE_URL = "https://dummyjson.com/"
 
     val instance: ApiService by lazy {
