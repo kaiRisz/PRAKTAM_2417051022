@@ -17,13 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.praktam_2417051022.data.model.Review
+import com.example.praktam_2417051022.ui.navigation.Screen
 
 @Composable
 fun ReviewRowItem(review: Review, navController: NavController) {
     Card(
         modifier = Modifier
             .width(150.dp)
-            .clickable { navController.navigate("detail/${review.nama}") },
+            .clickable { navController.navigate(Screen.Detail.createRoute(review.nama)) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(2.dp)

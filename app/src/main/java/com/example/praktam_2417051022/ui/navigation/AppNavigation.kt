@@ -3,17 +3,14 @@ package com.example.praktam_2417051022.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.praktam_2417051022.data.model.Review
-import com.example.praktam_2417051022.ui.screen.auth.LoginScreen
-import com.example.praktam_2417051022.ui.screen.auth.RegisterScreen
 import com.example.praktam_2417051022.ui.screen.detail.DetailScreen
-import com.example.praktam_2417051022.ui.screen.favorite.FavoriteScreen
 import com.example.praktam_2417051022.ui.screen.home.HomeScreen
-import com.example.praktam_2417051022.ui.screen.profile.ProfileScreen
-import com.example.praktam_2417051022.ui.screen.search.SearchScreen
-import com.example.praktam_2417051022.ui.screen.splash.SplashScreen
+import com.example.praktam_2417051022.ui.screen.home.ReviewFormScreen
 
 @Composable
 fun AppNavigation(
@@ -22,49 +19,33 @@ fun AppNavigation(
     onReviewsLoaded: (List<Review>) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    NavHost(navController = navController, startDestination = "login") {
-        composable("splash") {
-            SplashScreen(navController = navController)
-        }
-        composable("login") {
-            LoginScreen(navController = navController)
-        }
-        composable("register") {
-            RegisterScreen(navController = navController)
-        }
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route,
+        modifier = modifier
+    ) {
         composable(Screen.Home.route) {
             HomeScreen(
                 navController = navController,
-                modifier = modifier,
                 onReviewsLoaded = onReviewsLoaded
             )
         }
-        composable(Screen.Search.route) {
-            SearchScreen(
-                navController = navController,
-                reviews = reviews,
-                modifier = modifier
-            )
+        composable(Screen.Search.route) {}
+        composable(Screen.Favorite.route) {}
+        composable(Screen.Profile.route) {}
+        composable(
+            route = Screen.Detail.route,
+            arguments = listOf(navArgument("nama") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val nama = backStackEntry.arguments?.getString("nama") ?: ""
+            DetailScreen(navController = navController, namaAnime = nama)
         }
-        composable(Screen.Favorite.route) {
-            FavoriteScreen(
-                navController = navController,
-                reviews = reviews,
-                modifier = modifier
-            )
-        }
-        composable(Screen.Profile.route) {
-            ProfileScreen(
-                navController = navController,
-                modifier = modifier
-            )
-        }
-        composable("detail/{nama}") { backStackEntry ->
-            val nama = backStackEntry.arguments?.getString("nama")
-            val review = reviews.find { it.nama == nama }
-            review?.let {
-                DetailScreen(review = it, navController = navController, isFullScreen = true)
-            }
+        composable(
+            route = Screen.ReviewForm.route,
+            arguments = listOf(navArgument("reviewId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val reviewId = backStackEntry.arguments?.getString("reviewId") ?: "0"
+            ReviewFormScreen(navController = navController, reviewId = reviewId)
         }
     }
 }

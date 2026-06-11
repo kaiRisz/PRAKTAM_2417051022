@@ -1,33 +1,48 @@
 package com.example.praktam_2417051022.ui.screen.home
 
 import android.app.Application
+<<<<<<< HEAD
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.praktam_2417051022.data.api.RetrofitClient
 import com.example.praktam_2417051022.data.local.AppDatabase
+=======
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+>>>>>>> be73391 (bikin fitur CRUD)
 import com.example.praktam_2417051022.data.model.Review
+import com.example.praktam_2417051022.data.repository.ReviewRepository
 import kotlinx.coroutines.launch
 
+<<<<<<< HEAD
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val reviewDao = AppDatabase.getDatabase(application).reviewDao()
+=======
+// Mengubah dari ViewModel biasa ke AndroidViewModel agar kita bisa mendapatkan akses ke Application Context
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = ReviewRepository()
+    private val context = application.applicationContext
+>>>>>>> be73391 (bikin fitur CRUD)
 
-    private val _reviews = mutableStateOf<List<Review>>(emptyList())
-    val reviews: State<List<Review>> = _reviews
+    var reviews = mutableStateOf<List<Review>>(listOf())
+        private set
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    var isLoading = mutableStateOf(false)
+        private set
 
-    private val _isError = mutableStateOf(false)
-    val isError: State<Boolean> = _isError
+    var isError = mutableStateOf(false)
+        private set
 
     init {
         observeLocalReviews()
         fetchReviewsFromApi()
     }
 
+<<<<<<< HEAD
     private fun observeLocalReviews() {
         viewModelScope.launch {
             reviewDao.getAllReviews().collect { localList ->
@@ -37,10 +52,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun fetchReviewsFromApi() {
+=======
+    fun fetchReviews() {
+        isLoading.value = true
+        isError.value = false
+>>>>>>> be73391 (bikin fitur CRUD)
         viewModelScope.launch {
-            _isLoading.value = true
-            _isError.value = false
             try {
+<<<<<<< HEAD
                 val apiResponse = RetrofitClient.instance.getReviews()
                 apiResponse.forEach { review ->
                     reviewDao.insertReview(review)
@@ -51,6 +70,25 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } finally {
                 _isLoading.value = false
+=======
+                // Mengambil data presisten dari repository
+                val data = repository.getAllReviews(context)
+                reviews.value = data
+                isLoading.value = false
+            } catch (e: Exception) {
+                isLoading.value = false
+                isError.value = true
+            }
+        }
+    }
+
+    fun deleteReview(nama: String) {
+        viewModelScope.launch {
+            val isDeleted = repository.deleteReview(context, nama)
+            if (isDeleted) {
+                // Memicu recomposition UI secara aman tanpa merusak struktur NavController stack
+                reviews.value = repository.getAllReviews(context).toList()
+>>>>>>> be73391 (bikin fitur CRUD)
             }
         }
     }
