@@ -27,8 +27,6 @@ fun AppNavigation(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
-
-    // Penentuan startDestination: Login atau Home
     val startDestination = if (sessionManager.isLoggedIn()) Screen.Home.route else Screen.Login.route
 
     NavHost(
@@ -62,9 +60,6 @@ fun AppNavigation(
             ProfileScreen(navController = navController)
         }
 
-        // ... rute lainnya (Detail, Search, dll) tetap sama ...
-        composable(Screen.Search.route) {}
-        composable(Screen.Favorite.route) {}
         composable(
             route = Screen.Detail.route,
             arguments = listOf(navArgument("nama") { type = NavType.StringType })
@@ -72,6 +67,7 @@ fun AppNavigation(
             val nama = backStackEntry.arguments?.getString("nama") ?: ""
             DetailScreen(navController = navController, namaAnime = nama)
         }
+
         composable(
             route = Screen.ReviewForm.route,
             arguments = listOf(navArgument("reviewId") { type = NavType.StringType })

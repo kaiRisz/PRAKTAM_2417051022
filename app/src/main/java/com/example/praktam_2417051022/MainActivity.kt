@@ -34,8 +34,6 @@ class MainActivity : ComponentActivity() {
 
                 val navigationItems = listOf(
                     Screen.Home,
-                    Screen.Search,
-                    Screen.Favorite,
                     Screen.Profile
                 )
 
